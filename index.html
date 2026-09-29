@@ -1,0 +1,864 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D. Products | Online Store</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --green: #00ff99;
+    --purple: #9d4edd;
+    --bg: #050505;
+    --card: #111111;
+    --white: #ffffff;
+    --muted: #aaaaaa;
+}
+
+body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Animated background */
+body::before {
+    content: "";
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: var(--green);
+    filter: blur(150px);
+    opacity: 0.12;
+    border-radius: 50%;
+    top: -200px;
+    left: -200px;
+    animation: moveGlow 10s infinite alternate ease-in-out;
+    pointer-events: none;
+    z-index: -1;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: var(--purple);
+    filter: blur(160px);
+    opacity: 0.15;
+    border-radius: 50%;
+    bottom: -200px;
+    right: -200px;
+    animation: moveGlow2 12s infinite alternate ease-in-out;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes moveGlow {
+    from { transform: translate(0, 0); }
+    to { transform: translate(250px, 300px); }
+}
+
+@keyframes moveGlow2 {
+    from { transform: translate(0, 0); }
+    to { transform: translate(-250px, -200px); }
+}
+
+header {
+    padding: 20px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid #222;
+    background: rgba(0,0,0,0.75);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(15px);
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: 900;
+    color: var(--green);
+    letter-spacing: 1px;
+}
+
+.logo span {
+    color: white;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+.cart-btn {
+    background: var(--green);
+    color: #000;
+    padding: 12px 18px;
+    border-radius: 30px;
+    font-size: 14px;
+}
+
+.hero {
+    text-align: center;
+    padding: 80px 20px 55px;
+}
+
+.hero h1 {
+    font-size: clamp(35px, 6vw, 65px);
+    font-weight: 900;
+    margin-bottom: 18px;
+}
+
+.hero h1 span {
+    color: var(--green);
+    text-shadow: 0 0 30px rgba(0,255,153,0.4);
+}
+
+.hero p {
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 600px;
+    margin: auto;
+}
+
+.hero .shop-btn {
+    display: inline-block;
+    margin-top: 25px;
+    padding: 15px 30px;
+    border-radius: 30px;
+    background: linear-gradient(90deg, var(--green), #80ffdb);
+    color: #000;
+    text-decoration: none;
+    font-weight: 900;
+}
+
+.section-title {
+    text-align: center;
+    margin: 30px 0;
+    font-size: 30px;
+}
+
+.section-title span {
+    color: var(--green);
+}
+
+.products {
+    padding: 10px 6% 70px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.product-card {
+    background: rgba(17,17,17,0.9);
+    border: 1px solid #292929;
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    transition: 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-7px);
+    border-color: var(--green);
+    box-shadow: 0 0 25px rgba(0,255,153,0.12);
+}
+
+.product-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: #1a1a1a;
+    display: block;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--green);
+    color: #000;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.product-info {
+    padding: 18px;
+}
+
+.product-info h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.prices {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.old-price {
+    color: #888;
+    text-decoration: line-through;
+    font-size: 14px;
+}
+
+.new-price {
+    color: var(--green);
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.add-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--green);
+    color: #000;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.add-btn:hover {
+    background: #80ffdb;
+}
+
+/* Cart panel */
+.cart-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 20;
+    display: none;
+}
+
+.cart-overlay.active {
+    display: block;
+}
+
+.cart-panel {
+    position: fixed;
+    top: 0;
+    right: -450px;
+    width: min(420px, 100%);
+    height: 100vh;
+    background: #101010;
+    border-left: 1px solid #333;
+    z-index: 21;
+    padding: 25px;
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-panel.active {
+    right: 0;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #333;
+}
+
+.cart-header h2 {
+    color: var(--green);
+}
+
+.close-btn {
+    background: #222;
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    font-size: 22px;
+}
+
+.cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px 0;
+}
+
+.empty-cart {
+    text-align: center;
+    color: #999;
+    margin-top: 50px;
+    line-height: 1.7;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 0;
+    border-bottom: 1px solid #292929;
+}
+
+.cart-item h4 {
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.cart-item p {
+    color: var(--green);
+    font-weight: bold;
+}
+
+.quantity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.quantity button {
+    background: #292929;
+    color: white;
+    width: 27px;
+    height: 27px;
+    border-radius: 6px;
+    font-size: 17px;
+}
+
+.remove-btn {
+    background: transparent;
+    color: #ff5555;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.cart-footer {
+    border-top: 1px solid #333;
+    padding-top: 18px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    color: #ccc;
+}
+
+.total-row.final {
+    color: var(--green);
+    font-size: 22px;
+    font-weight: 900;
+    margin-top: 15px;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 16px;
+    background: #25D366;
+    color: white;
+    border-radius: 12px;
+    margin-top: 15px;
+    font-size: 16px;
+}
+
+.checkout-btn:hover {
+    background: #1ebe5d;
+}
+
+footer {
+    border-top: 1px solid #252525;
+    padding: 35px 20px;
+    text-align: center;
+    color: #888;
+    line-height: 1.8;
+}
+
+footer strong {
+    color: var(--green);
+}
+
+@media (max-width: 1000px) {
+    .products {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    header {
+        padding: 16px 4%;
+    }
+
+    .logo {
+        font-size: 21px;
+    }
+
+    .products {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 10px 4% 50px;
+        gap: 12px;
+    }
+
+    .product-image {
+        height: 160px;
+    }
+
+    .product-info {
+        padding: 13px;
+    }
+
+    .product-info h3 {
+        font-size: 15px;
+    }
+
+    .new-price {
+        font-size: 19px;
+    }
+
+    .hero {
+        padding: 60px 15px 40px;
+    }
+
+    .hero p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 360px) {
+    .products {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">D. <span>PRODUCTS</span></div>
+
+    <div class="header-actions">
+        <button class="cart-btn" onclick="openCart()">
+            🛒 Cart (<span id="cart-count">0</span>)
+        </button>
+    </div>
+</header>
+
+<section class="hero">
+    <h1>Welcome to <span>D. Products</span></h1>
+    <p>
+        Discover useful products at great prices.
+        Shop your favorites and order directly through WhatsApp.
+    </p>
+    <a href="#shop" class="shop-btn">SHOP NOW →</a>
+</section>
+
+<h2 class="section-title" id="shop">Our <span>Products</span></h2>
+
+<div class="products" id="products"></div>
+
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+
+<aside class="cart-panel" id="cart-panel">
+    <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="close-btn" onclick="closeCart()">×</button>
+    </div>
+
+    <div class="cart-items" id="cart-items"></div>
+
+    <div class="cart-footer">
+        <div class="total-row">
+            <span>Subtotal</span>
+            <span id="subtotal">Rs. 0</span>
+        </div>
+
+        <div class="total-row">
+            <span>You save</span>
+            <span id="savings" style="color:var(--green)">Rs. 0</span>
+        </div>
+
+        <div class="total-row final">
+            <span>Total</span>
+            <span id="total">Rs. 0</span>
+        </div>
+
+        <button class="checkout-btn" onclick="checkout()">
+            Order on WhatsApp
+        </button>
+    </div>
+</aside>
+
+<footer>
+    <p>© 2026 <strong>D. Products</strong>. All rights reserved.</p>
+    <p>Order directly through WhatsApp.</p>
+</footer>
+
+<script>
+/* ============================
+   STORE SETTINGS
+============================ */
+
+// Your WhatsApp number in international format.
+// No + sign, spaces, or dashes.
+const whatsappNumber = "923465752713";
+
+// Replace the sample products, prices, and images
+// with your real products before publishing.
+
+const products = [
+    {
+        id: 1,
+        name: "Premium Water Bottle",
+        regularPrice: 1500,
+        image: "https://placehold.co/600x400/111111/00ff99?text=Water+Bottle"
+    },
+    {
+        id: 2,
+        name: "Wireless Earbuds",
+        regularPrice: 3500,
+        image: "https://placehold.co/600x400/111111/9d4edd?text=Earbuds"
+    },
+    {
+        id: 3,
+        name: "Stylish Wrist Watch",
+        regularPrice: 4500,
+        image: "https://placehold.co/600x400/111111/00ff99?text=Wrist+Watch"
+    },
+    {
+        id: 4,
+        name: "Phone Stand",
+        regularPrice: 1200,
+        image: "https://placehold.co/600x400/111111/9d4edd?text=Phone+Stand"
+    },
+    {
+        id: 5,
+        name: "LED Desk Lamp",
+        regularPrice: 2800,
+        image: "https://placehold.co/600x400/111111/00ff99?text=Desk+Lamp"
+    },
+    {
+        id: 6,
+        name: "Travel Organizer",
+        regularPrice: 2000,
+        image: "https://placehold.co/600x400/111111/9d4edd?text=Organizer"
+    },
+    {
+        id: 7,
+        name: "Mini Backpack",
+        regularPrice: 4000,
+        image: "https://placehold.co/600x400/111111/00ff99?text=Backpack"
+    },
+    {
+        id: 8,
+        name: "Sunglasses",
+        regularPrice: 2200,
+        image: "https://placehold.co/600x400/111111/9d4edd?text=Sunglasses"
+    },
+    {
+        id: 9,
+        name: "Wallet",
+        regularPrice: 1800,
+        image: "https://placehold.co/600x400/111111/00ff99?text=Wallet"
+    },
+    {
+        id: 10,
+        name: "Premium Keychain",
+        regularPrice: 800,
+        image: "https://placehold.co/600x400/111111/9d4edd?text=Keychain"
+    }
+];
+
+/* ============================
+   DAILY DISCOUNTS
+============================ */
+
+const discountRates = [10, 12, 15];
+
+// Each day, the discount assignment changes.
+// The same date gives the same discounts to all visitors.
+function getDailyDiscount(index) {
+    const day = Math.floor(Date.now() / 86400000);
+    return discountRates[(index + day) % discountRates.length];
+}
+
+function getSalePrice(product) {
+    const index = products.findIndex(p => p.id === product.id);
+    const discount = getDailyDiscount(index);
+
+    return Math.round(
+        product.regularPrice * (1 - discount / 100)
+    );
+}
+
+/* ============================
+   DISPLAY PRODUCTS
+============================ */
+
+const productsContainer = document.getElementById("products");
+
+function renderProducts() {
+    productsContainer.innerHTML = "";
+
+    products.forEach((product, index) => {
+        const discount = getDailyDiscount(index);
+        const salePrice = getSalePrice(product);
+
+        const card = document.createElement("div");
+        card.className = "product-card";
+
+        card.innerHTML = `
+            <div class="discount-badge">${discount}% OFF</div>
+
+            <img
+                class="product-image"
+                src="${product.image}"
+                alt="${product.name}"
+                onerror="this.src='https://placehold.co/600x400/111111/ffffff?text=Product'"
+            >
+
+            <div class="product-info">
+                <h3>${product.name}</h3>
+
+                <div class="prices">
+                    <span class="old-price">
+                        Rs. ${product.regularPrice.toLocaleString("en-PK")}
+                    </span>
+
+                    <span class="new-price">
+                        Rs. ${salePrice.toLocaleString("en-PK")}
+                    </span>
+                </div>
+
+                <button class="add-btn" onclick="addToCart(${product.id})">
+                    Add to Cart
+                </button>
+            </div>
+        `;
+
+        productsContainer.appendChild(card);
+    });
+}
+
+/* ============================
+   SHOPPING CART
+============================ */
+
+let cart = [];
+
+function addToCart(id) {
+    const existing = cart.find(item => item.id === id);
+
+    if (existing) {
+        existing.quantity++;
+    } else {
+        cart.push({
+            id: id,
+            quantity: 1
+        });
+    }
+
+    renderCart();
+    openCart();
+}
+
+function changeQuantity(id, amount) {
+    const item = cart.find(item => item.id === id);
+
+    if (!item) return;
+
+    item.quantity += amount;
+
+    if (item.quantity <= 0) {
+        cart = cart.filter(item => item.id !== id);
+    }
+
+    renderCart();
+}
+
+function removeFromCart(id) {
+    cart = cart.filter(item => item.id !== id);
+    renderCart();
+}
+
+function renderCart() {
+    const cartItems = document.getElementById("cart-items");
+    const cartCount = document.getElementById("cart-count");
+
+    cartItems.innerHTML = "";
+
+    let subtotal = 0;
+    let total = 0;
+    let count = 0;
+
+    if (cart.length === 0) {
+        cartItems.innerHTML = `
+            <div class="empty-cart">
+                <h3>Your cart is empty 🛒</h3>
+                <p>Add some products to get started.</p>
+            </div>
+        `;
+    }
+
+    cart.forEach(item => {
+        const product = products.find(p => p.id === item.id);
+
+        if (!product) return;
+
+        const salePrice = getSalePrice(product);
+        const originalTotal = product.regularPrice * item.quantity;
+        const discountedTotal = salePrice * item.quantity;
+
+        subtotal += originalTotal;
+        total += discountedTotal;
+        count += item.quantity;
+
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+
+        cartItem.innerHTML = `
+            <div>
+                <h4>${product.name}</h4>
+                <p>Rs. ${salePrice.toLocaleString("en-PK")}</p>
+
+                <div class="quantity">
+                    <button onclick="changeQuantity(${item.id}, -1)">−</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="changeQuantity(${item.id}, 1)">+</button>
+                </div>
+
+                <button
+                    class="remove-btn"
+                    onclick="removeFromCart(${item.id})"
+                >
+                    Remove
+                </button>
+            </div>
+
+            <strong style="color:var(--green)">
+                Rs. ${discountedTotal.toLocaleString("en-PK")}
+            </strong>
+        `;
+
+        cartItems.appendChild(cartItem);
+    });
+
+    cartCount.textContent = count;
+
+    document.getElementById("subtotal").textContent =
+        "Rs. " + subtotal.toLocaleString("en-PK");
+
+    document.getElementById("savings").textContent =
+        "Rs. " + (subtotal - total).toLocaleString("en-PK");
+
+    document.getElementById("total").textContent =
+        "Rs. " + total.toLocaleString("en-PK");
+}
+
+/* ============================
+   CART OPEN / CLOSE
+============================ */
+
+function openCart() {
+    document.getElementById("cart-panel").classList.add("active");
+    document.getElementById("cart-overlay").classList.add("active");
+}
+
+function closeCart() {
+    document.getElementById("cart-panel").classList.remove("active");
+    document.getElementById("cart-overlay").classList.remove("active");
+}
+
+/* ============================
+   WHATSAPP CHECKOUT
+============================ */
+
+function checkout() {
+    if (cart.length === 0) {
+        alert("Your cart is empty. Please add a product first.");
+        return;
+    }
+
+    let message = "Hello D. Products! I want to place an order:\n\n";
+
+    let total = 0;
+
+    cart.forEach(item => {
+        const product = products.find(p => p.id === item.id);
+
+        if (!product) return;
+
+        const salePrice = getSalePrice(product);
+        const itemTotal = salePrice * item.quantity;
+
+        total += itemTotal;
+
+        message +=
+            product.name + "\n" +
+            "Quantity: " + item.quantity + "\n" +
+            "Price: Rs. " + salePrice.toLocaleString("en-PK") + "\n" +
+            "Subtotal: Rs. " + itemTotal.toLocaleString("en-PK") + "\n\n";
+    });
+
+    message +=
+        "Total: Rs. " + total.toLocaleString("en-PK") +
+        "\n\nPlease confirm my order and delivery details.";
+
+    const whatsappURL =
+        "https://wa.me/" + whatsappNumber +
+        "?text=" + encodeURIComponent(message);
+
+    window.open(whatsappURL, "_blank");
+}
+
+/* ============================
+   INITIALIZE STORE
+============================ */
+
+renderProducts();
+renderCart();
+
+// Refresh daily discount labels/prices when the date changes
+// while the store remains open.
+let currentDay = Math.floor(Date.now() / 86400000);
+
+setInterval(() => {
+    const newDay = Math.floor(Date.now() / 86400000);
+
+    if (newDay !== currentDay) {
+        currentDay = newDay;
+        renderProducts();
+        renderCart();
+    }
+}, 60000);
+</script>
+
+</body>
+</html>
